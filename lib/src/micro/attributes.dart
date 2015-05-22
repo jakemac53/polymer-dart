@@ -74,27 +74,27 @@ abstract class Attributes implements Element, Properties {
 
   dynamic deserialize(String value, Type type) {
     var newValue;
-    switch (type) {
-      case int:
+    switch ('$type') {
+      case 'int':
         newValue = int.parse(value);
         break;
-      case double:
+      case 'double':
         newValue = double.parse(value);
         break;
-      case num:
+      case 'num':
         newValue = num.parse(value);
         break;
-      case bool:
+      case 'bool':
         newValue = value != null;
         break;
-      case Map:
+      case 'Map':
         try {
           newValue = JSON.decode(value);
         } catch(x) {
           // allow non-JSON literals like Strings and Numbers
         }
         break;
-      case List:
+      case 'List':
         try {
           newValue = JSON.decode(value);
         } catch(x) {
@@ -103,10 +103,10 @@ abstract class Attributes implements Element, Properties {
               'Polymer::Attributes: couldn`t decode List as JSON: $value');
         }
         break;
-      case DateTime:
+      case 'DateTime':
         newValue = DateTime.parse(value);
         break;
-      case String:
+      case 'String':
         newValue = value;
         break;
       default:
