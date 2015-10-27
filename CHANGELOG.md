@@ -1,3 +1,8 @@
+#### 1.0.0-rc.4
+  * Add warning about `registered` and `beforeRegister` instance methods if they
+    are annotated with `@reflectable`. These are special methods which should
+    only be static, and will be invoked with the JS prototype for the element.
+
 #### 1.0.0-rc.3
   * Annotations are no longer needed on both the getter and setter for fields,
     [#621](https://github.com/dart-lang/polymer-dart/issues/621).

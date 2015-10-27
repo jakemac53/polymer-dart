@@ -169,10 +169,14 @@ main() async {
       });
     });
 
-    group('host attributes', () {
-      test('get assigned', () {
-        expect(el.attributes['dart'], 'hello');
-        expect(el.attributes['js'], 'hello');
+    group('registration methods', () {
+      test('registered gets called', () {
+        var jsEl = new JsObject.fromBrowserObject(el);
+        expect(MyElement._registeredProtosMyElement.length, 1);
+        expect(MyElement._registeredProtosMyElement[0], jsEl['__proto__']);
+        expect(DartBehavior._registeredProtosDartBehavior.length, 1);
+        expect(
+            DartBehavior._registeredProtosDartBehavior[0], jsEl['__proto__']);
       });
     });
   });
@@ -255,6 +259,18 @@ class DartBehavior {
 
   // Host Attributes
   static const Map<String, String> hostAttributes = const {'dart': 'hello'};
+
+  static List _registeredProtosDartBehavior = [];
+  static void registered( proto) {
+    proto = new JsObject.fromBrowserObject(proto);
+    _registeredProtosDartBehavior.add(proto);
+  }
+
+  static List _beforeRegisterProtosDartBehavior = [];
+  static void beforeRegister( proto) {
+    proto = new JsObject.fromBrowserObject(proto);
+    _beforeRegisterProtosDartBehavior.add(proto);
+  }
 }
 
 @PolymerRegister('my-element')
@@ -262,4 +278,16 @@ class MyElement extends PolymerElement with JsBehavior, DartBehavior {
   MyElement.created() : super.created();
 
   factory MyElement() => document.createElement('my-element');
+
+  static List _registeredProtosMyElement = [];
+  static void registered( proto) {
+    proto = new JsObject.fromBrowserObject(proto);
+    _registeredProtosMyElement.add(proto);
+  }
+
+  static List _beforeRegisterProtosMyElement = [];
+  static void beforeRegister( proto) {
+    proto = new JsObject.fromBrowserObject(proto);
+    _beforeRegisterProtosMyElement.add(proto);
+  }
 }

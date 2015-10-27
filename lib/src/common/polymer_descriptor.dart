@@ -31,6 +31,7 @@ JsObject createPolymerDescriptor(Type type, PolymerRegister annotation) {
   _setupLifecycleMethods(type, object);
   _setupReflectableMethods(type, object);
   _setupHostAttributes(type, object);
+  _setupStaticMethods(type, object);
 
   return new JsObject.jsify(object);
 }
@@ -143,8 +144,15 @@ Map<String, DeclarationMirror> _reflectableMethodsFor(Type type) {
 void _setupReflectableMethods(Type type, Map descriptor) {
   var declarations = _reflectableMethodsFor(type);
   declarations.forEach((String name, DeclarationMirror declaration) {
-    // TODO(jakemac): Support functions with more than 6 args? We should at
-    // least throw a better error in that case.
+    // Error on anything in `_registrationMethods`.
+    if (_registrationMethods.contains(name)) {
+      throw 'Disallowed instance method `$name` with @reflectable annotation '
+        ' on the ${declaration.owner.simpleName} class. You can either rename '
+        'the method or change it to a static method. If it is a static method '
+        'it will be invoked with the JS prototype of the element.';
+    }
+
+    // Add the method.
     descriptor[name] = _polymerDart.callMethod('invokeDartFactory', [
       (dartInstance, arguments) {
         var newArgs = arguments.map((arg) => convertToDart(arg)).toList();
@@ -162,6 +170,26 @@ void _setupHostAttributes(Type type, Map descriptor) {
   if (hostAttributes != null) {
     descriptor['hostAttributes'] = hostAttributes;
   }
+}
+
+final _registrationMethods = const ['registered', 'beforeRegister'];
+
+/// Sets up any static methods annotated with `@reflectable` or whose name is in
+/// `_staticRegistrationMethods`.
+void _setupStaticMethods(Type type, Map descriptor) {
+  var typeMirror = jsProxyReflectable.reflectType(type);
+  typeMirror.staticMembers.forEach((String name, MethodMirror method) {
+    if (_registrationMethods.contains(name) ||
+        method.metadata.any((m) => m is Reflectable)) {
+      descriptor[name] = _polymerDart.callMethod('invokeDartFactory', [
+        (dartInstance, arguments) {
+          var newArgs = [dartInstance]
+            ..addAll(arguments.map((arg) => convertToDart(arg)));
+          typeMirror.invoke(name, newArgs);
+        }
+      ]);
+    }
+  });
 }
 
 /// Object that represents a property that was not found.

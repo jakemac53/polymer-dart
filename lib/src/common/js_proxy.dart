@@ -60,7 +60,7 @@ JsObject _buildJsProxy(JsProxy instance) {
 
 const _knownMethodAndPropertyNames =
     'hostAttributes|created|attached|detached|attributeChanged|ready|serialize'
-    '|deserialize';
+    '|deserialize|registered|beforeRegister';
 
 /// The [Reflectable] class which gives you the ability to do everything that
 /// PolymerElements and JsProxies need to do.
@@ -78,6 +78,7 @@ class JsProxyReflectable extends Reflectable {
           const SuperclassQuantifyCapability(HtmlElement,
               excludeUpperBound: true),
           const StaticInvokeCapability(_knownMethodAndPropertyNames),
+          const StaticInvokeMetaCapability(PolymerReflectable),
           correspondingSetterQuantifyCapability
         ]);
 }
